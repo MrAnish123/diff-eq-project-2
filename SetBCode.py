@@ -47,7 +47,7 @@ def matrixToPower(matrixSize : int, matrix : list, power : int):
     return result
 
 
-
+#returns new probability state vector
 def findProbability(matrixSize : int, transitionMatrix : list, stateVector : list):
     result = [0 for n in range(matrixSize)]
     for i in range(matrixSize):
@@ -58,53 +58,80 @@ def findProbability(matrixSize : int, transitionMatrix : list, stateVector : lis
 
     return result
 
-def getNormalizedVector(vecLength : int, vector : list) -> list:
+def getNorm(vecLength : int, vector : list): 
     
     norm = 0
+    for x_i in vector: 
+        norm += abs(x_i)
+    
+    return norm
+
+def getNormalizedVector(vecLength : int, vector : list) -> list:
+    
+    norm = getNorm(vecLength, vector)
     newVector = vector
     
-    for x_i in newVector: 
-        norm += x_i**2
-    
-    norm = math.sqrt(norm)
-    
     for i in range(vecLength): 
-        newVector[i] = newVector[i] / vecLength
+        newVector[i] = newVector[i] / norm
     
     return newVector
 
 
 def plotProbability(matrixSize : int, numSteps : int, transitionMatrix : list, stateVector : list, title):
-    plt.figure()
+    
+    fig, ax = plt.subplots(2, 1)
     plotLegend = ["Susceptible", "Exposed", "Infected", "Recovered"]
+    
     currentProbVector = [0 for n in range(matrixSize)]
     allProbVectors = []
+    errorVectors = []
+    
     currentProbMatrix = transitionMatrix ### createEmptySquareMatrix(matrixSize)
+    eigenvalues, eigenvectors = np.linalg.eig(np.array(currentProbMatrix))
+    
+    sortedIdx = eigenvalues.argsort()[::-1]
+    eigenvectors = eigenvectors[:,sortedIdx]
+    
+ 
+    c1 = np.linalg.solve(eigenvectors, stateVector)[0]
+    xVec_inf_analytic = getNormalizedVector(matrixSize, c1 * eigenvectors[:, 0])
+    
     xVector = [(n + 1) for n in range(numSteps - 1)]
     
     for i in range(numSteps - 1):
         currentProbMatrix = matrixMultiplication(matrixSize, currentProbMatrix, transitionMatrix)
         currentProbVector = findProbability(matrixSize, currentProbMatrix, stateVector)
         
-        
         ### Normalize Vectors -- Doesn't seem to be needed, or working ###
        
         ######################################################
-        allProbVectors.append(getNormalizedVector(matrixSize, currentProbVector))  ### allProbVectors.append(iterVector)
+        normedVector = getNormalizedVector(matrixSize, currentProbVector)
+        errorVector = getNormalizedVector(matrixSize, xVec_inf_analytic - normedVector)
+
+        allProbVectors.append(normedVector)  ### allProbVectors.append(iterVector)
+        errorVectors.append(errorVector)
     
     for v in range(matrixSize):
         yVector = []
+        errorVector = []
+        
         for w in range(numSteps - 1):
             yVector.append(allProbVectors[w][v])
+            errorVector.append(errorVectors[w][v])
+            
             ### print(allProbVectors[w-1][v]) ###
-        plt.plot(xVector, yVector, label = plotLegend[v])
-        plt.title(title)
-        plt.legend()
+        ax[0].plot(xVector, yVector, label = plotLegend[v])
+        ax[0].set_title("Probability Graph")
+        
+        ax[1].set_title("Error Graph From Analytic Solution To Iterated Solution")
+        ax[1].semilogy(xVector, errorVector)
+        
+        
+        #ax[0].title(title)
+        ax[0].legend()
 
 ### Problem 1 ###
 plotProbability(4, 31, setAProbMatrix, stateVectorOne, "Problem 1")
-
-
 
 ### Problem 2 ###
 plotProbability(4, 31, setAProbMatrix, stateVectorTwo, "Problem 2")
