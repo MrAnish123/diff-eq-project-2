@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import math
 
 
 
@@ -21,7 +22,6 @@ result = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 
 def createEmptySquareMatrix(matrixSize : int):
     matrix = [[0 for n in range(matrixSize)] for n in range(matrixSize)]
-
     return matrix
 
 
@@ -41,7 +41,7 @@ def matrixMultiplication(matrixSize : int, matrix1 : list, matrix2 : list):
 
 def matrixToPower(matrixSize : int, matrix : list, power : int):
     result = matrix
-    for n in range(power - 1):
+    for n in range(power):
         result = matrixMultiplication(matrixSize, result, matrix)
 
     return result
@@ -58,6 +58,20 @@ def findProbability(matrixSize : int, transitionMatrix : list, stateVector : lis
 
     return result
 
+def getNormalizedVector(vecLength : int, vector : list) -> list:
+    
+    norm = 0
+    newVector = vector
+    
+    for x_i in newVector: 
+        norm += x_i**2
+    
+    norm = math.sqrt(norm)
+    
+    for i in range(vecLength): 
+        newVector[i] = newVector[i] / vecLength
+    
+    return newVector
 
 
 def plotProbability(matrixSize : int, numSteps : int, transitionMatrix : list, stateVector : list, title):
@@ -67,20 +81,16 @@ def plotProbability(matrixSize : int, numSteps : int, transitionMatrix : list, s
     allProbVectors = []
     currentProbMatrix = transitionMatrix ### createEmptySquareMatrix(matrixSize)
     xVector = [(n + 1) for n in range(numSteps - 1)]
+    
     for i in range(numSteps - 1):
         currentProbMatrix = matrixMultiplication(matrixSize, currentProbMatrix, transitionMatrix)
         currentProbVector = findProbability(matrixSize, currentProbMatrix, stateVector)
+        
+        
         ### Normalize Vectors -- Doesn't seem to be needed, or working ###
-        normalValue = 0
-        for j in range(matrixSize):
-            ### iterVector = [0 for n in range(matrixSize)] ###
-            normalValue += currentProbVector[j] * currentProbVector[j]
-        normalValue = np.sqrt(normalValue)
-        iterVector = [0 for n in range(matrixSize)]
-        for j in range(matrixSize):
-            iterVector[j] = currentProbVector[j] / normalValue
+       
         ######################################################
-        allProbVectors.append(currentProbVector)  ### allProbVectors.append(iterVector)
+        allProbVectors.append(getNormalizedVector(matrixSize, currentProbVector))  ### allProbVectors.append(iterVector)
     
     for v in range(matrixSize):
         yVector = []
@@ -90,7 +100,6 @@ def plotProbability(matrixSize : int, numSteps : int, transitionMatrix : list, s
         plt.plot(xVector, yVector, label = plotLegend[v])
         plt.title(title)
         plt.legend()
-
 
 ### Problem 1 ###
 plotProbability(4, 31, setAProbMatrix, stateVectorOne, "Problem 1")
