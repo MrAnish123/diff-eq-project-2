@@ -12,9 +12,18 @@ matrixSize = 3
 
 matrix1 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 matrix2 = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+#Problem 1
 stateVectorOne = [1, 0, 0, 0]
+
+#Problem 2
 stateVectorTwo = [0.15, 0.85, 0, 0]
+
+#Problem 5
+stateVectorThree = [1, 0, 0, 0, 0]
+
 setAProbMatrix = [[0.7, 0.4, 0, 0.2], [0.3, 0, 0, 0], [0, 0.3, 0, 0], [0, 0.3, 1, 0.8]]
+setBSEIRImMatrix = [[0.7, 0.4, 0, 0.2, 0], [0.3, 0, 0, 0, 0], [0, 0.3, 0, 0, 0], [0, 0.3, 1, 0.6, 0], [0, 0, 0, 0.2, 1]]
 
 
 result = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -77,10 +86,9 @@ def getNormalizedVector(vecLength : int, vector : list) -> list:
     return newVector
 
 
-def plotProbability(matrixSize : int, numSteps : int, transitionMatrix : list, stateVector : list, title):
+def plotProbability(matrixSize : int, numSteps : int, transitionMatrix : list, stateVector : list, title : str, plotLegend : list):
     
     fig, ax = plt.subplots(2, 1)
-    plotLegend = ["Susceptible", "Exposed", "Infected", "Recovered"]
     
     currentProbVector = [0 for n in range(matrixSize)]
     allProbVectors = []
@@ -120,7 +128,7 @@ def plotProbability(matrixSize : int, numSteps : int, transitionMatrix : list, s
             errorVector.append(errorVectors[w][v])
             
             ### print(allProbVectors[w-1][v]) ###
-        ax[0].plot(xVector, yVector, label = plotLegend[v])
+        ax[0].plot(xVector, yVector, label=plotLegend[v])
         ax[0].set_title("Probability Graph")
         
         ax[1].set_title("Error Graph From Analytic Solution To Iterated Solution")
@@ -131,9 +139,12 @@ def plotProbability(matrixSize : int, numSteps : int, transitionMatrix : list, s
         ax[0].legend()
 
 ### Problem 1 ###
-plotProbability(4, 31, setAProbMatrix, stateVectorOne, "Problem 1")
+plotProbability(4, 31, setAProbMatrix, stateVectorOne, "Problem 1", ["Susceptible", "Exposed", "Infected", "Recovered"])
 
 ### Problem 2 ###
-plotProbability(4, 31, setAProbMatrix, stateVectorTwo, "Problem 2")
+plotProbability(4, 31, setAProbMatrix, stateVectorTwo, "Problem 2", ["Susceptible", "Exposed", "Infected", "Recovered"])
+
+### Problem 5 ###
+plotProbability(5, 250, setBSEIRImMatrix, stateVectorThree, "Problem 5", ["Susceptible", "Exposed", "Infected", "Recovered", "Immune"])
 
 plt.show()
